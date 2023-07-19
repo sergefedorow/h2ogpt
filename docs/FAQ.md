@@ -23,7 +23,7 @@ This uses 5800MB to startup, then soon drops to 5075MB after torch cache is clea
 
 On CPU case, a good model that's still low memory is to run:
 ```bash
-python generate.py --base_model='llama' --prompt_type=wizard2 --hf_embedding_model=sentence-transformers/all-MiniLM-L6-v2 --langchain_mode=MyData --user_path=user_path
+python generate.py --base_model='llama' --prompt_type=wizard2 --hf_embedding_model=sentence-transformers/all-MiniLM-L6-v2 --langchain_mode=UserData --user_path=user_path
 ```
 
 ### ValueError: ...offload....
@@ -34,6 +34,10 @@ the weights in this format.
 ```
 
 If you see this error, then you either have insufficient GPU memory or insufficient CPU memory.  E.g. for 6.9B model one needs minimum of 27GB free memory.
+
+### TypeError: Chroma.init() got an unexpected keyword argument 'anonymized_telemetry'
+
+Please check your version of langchain vs. the one in requirements.txt.  Somehow the wrong version is installed.  Try to install the correct one.
 
 ### Larger models require more GPU memory
 
@@ -157,6 +161,8 @@ This warning can be safely ignored.
    - `API_OPEN`: Whether API access is visible,
    - `ALLOW_API`: Whether to allow API access,
    - `CUDA_VISIBLE_DEVICES`: Standard list of CUDA devices to make visible.
+   - `PING_GPU`: ping GPU every few minutes for full GPU memory usage by torch, useful for debugging OOMs or memory leaks
+   - `GET_GITHASH`: get git hash on startup for system info.  Avoided normally as can fail with extra messages in output for CLI mode
 
 These can be useful on HuggingFace spaces, where one sets secret tokens because CLI options cannot be used.
 

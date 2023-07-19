@@ -50,15 +50,15 @@ Open-source data types are supported, .msg is not supported due to GPL-3 require
 
 To support image captioning, on Ubuntu run:
 ```bash
-sudo apt-get install libmagic-dev poppler-utils tesseract-ocr
+sudo apt-get install libmagic-dev poppler-utils tesseract-ocr libtesseract-dev
 ```
 and ensure in `requirements_optional_langchain.txt` that `unstructured[local-inference]` and `pdf2image` are installed.  Otherwise, for no image support just `unstructured` is sufficient.
 
 OCR is disabled by default, but can be enabled if making database via `make_db.py`, and then on Ubuntu run:
 ```bash
-sudo apt-get install tesseract-ocr
+sudo apt-get install tesseract-ocr libtesseract-dev
 ```
-and ensure you `pip install pytesseract`.
+and ensure you `pip install pytesseract`.  See [Tesseract documentation](https://tesseract-ocr.github.io/tessdoc/Installation.html).
 
 To support Microsoft Office docx, doc, xls, xlsx, on Ubuntu run:
 ```bash
@@ -115,20 +115,20 @@ When pymupdf is installed, we will use `PyMuPDFLoader` by default to parse PDFs 
 
 To use some example databases (will overwrite UserData make above unless change options) and run generate after, do:
 ```bash
-python make_db.py --download_some=True
+python src/make_db.py --download_some=True
 python generate.py --base_model=h2oai/h2ogpt-oasst1-512-12b --load_8bit=True --langchain_mode=UserData --visible_langchain_modes="['UserData', 'wiki', 'MyData', 'github h2oGPT', 'DriverlessAI docs']"
 ```
 which downloads example databases.  This obtains files from some [pre-generated databases](https://huggingface.co/datasets/h2oai/db_dirs).  A large Wikipedia database is also available.
 
 To build the database first outside chatbot, then run generate after, do:
 ```bash
-python make_db.py
+python src/make_db.py
 python generate.py --base_model=h2oai/h2ogpt-oig-oasst1-512-6_9b --langchain_mode=UserData
 ```
 
 To add data to the existing database, then run generate after, do:
 ```bash
-python make_db.py --add_if_exists=True
+python src/make_db.py --add_if_exists=True
 python generate.py --base_model=h2oai/h2ogpt-oig-oasst1-512-6_9b --langchain_mode=UserData
 ```
 
@@ -146,6 +146,10 @@ and if you want to push image caption model to get better captions, this can be 
 ```bash
 python generate.py  --inference_server=openai_chat --base_model=gpt-3.5-turbo --score_model=None --langchain_mode=ChatLLM --visible_langchain_modes="['ChatLLM', 'UserData', 'MyData']" --captions_model=Salesforce/blip2-flan-t5-xl
 ```
+
+### Note about Embeddings
+
+The default embedding for GPU is `instructor-large` since most accurate, however it leads to excessively high scores for references due to its flat score distribution.  For CPU the default embedding is `all-MiniLM-L6-v2`, and it has a sharp distribution of scores, so references make sense, but it is less accurate.
 
 ### Note about FAISS
 
@@ -223,8 +227,8 @@ curl -o docker-compose.yml "https://configuration.weaviate.io/v2/docker-compose/
   Refer to the [documentation](https://weaviate.io/developers/weaviate/installation/embedded) for more details about this deployment method.
 ## How To Use
 Simply pass the `--db_type=weaviate` argument. For example:
-```
-python make_db.py --db_type=weaviate
+```bash
+python src/make_db.py --db_type=weaviate
 python generate.py --base_model=h2oai/h2ogpt-oig-oasst1-512-6_9b \
    --langchain_mode=UserData \
    --db_type=weaviate
@@ -233,7 +237,7 @@ will use an embedded weaviate instance.
 
 If you have a weaviate instance hosted at say http://localhost:8080, then you need to define the `WEAVIATE_URL` environment variable before running the scripts:
 ```
-WEAVIATE_URL=http://localhost:8080 python make_db.py --db_type=weaviate
+WEAVIATE_URL=http://localhost:8080 python src/make_db.py --db_type=weaviate
 WEAVIATE_URL=http://localhost:8080 python generate.py --base_model=h2oai/h2ogpt-oig-oasst1-512-6_9b \
    --langchain_mode=UserData \
    --db_type=weaviate
