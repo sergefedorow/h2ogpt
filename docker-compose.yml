@@ -9,10 +9,11 @@ services:
         BUILDKIT_INLINE_CACHE: "0"
     image: h2o-llm
     shm_size: '64gb'
-    command: generate.py --load_8bit True --base_model 'EleutherAI/gpt-j-6B'
+    #command: generate.py --load_8bit True --base_model 'EleutherAI/gpt-j-6B'
+    command: generate.py --base_model 'h2oai/h2ogpt-gm-oasst1-en-2048-falcon-7b-v3' --hf_embedding_model 'sentence-transformers/all-MiniLM-L6-v2' --score_model 'None' --load_8bit 'True' --langchain_mode 'MyData'
     restart: unless-stopped
     volumes:
-      - h2o-llm:/root/.cache # Location downloaded weights will be stored
+      - ./volumes/h2o-llm:/root/.cache # Location downloaded weights will be stored
     ports:
       - 7860:7860
     deploy:
@@ -23,6 +24,14 @@ services:
               count: all
               capabilities: [ gpu ]
 
-volumes:
-  h2o-llm:
-    name: h2o-llm
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./volumes/caddy-data/site:/srv
+      - ./volumes/caddy-data/caddy_data:/data
+      - ./volumes/caddy-data/caddy_config:/config

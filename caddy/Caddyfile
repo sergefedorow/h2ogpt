@@ -1,0 +1,3 @@
+h2ogpt.fedorow.com.ua {
+    reverse_proxy http://h2o-llm:7860
+}
